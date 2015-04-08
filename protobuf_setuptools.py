@@ -2,9 +2,10 @@ import os
 import sys
 import subprocess
 
-from os import path as op 
+from os import path as op
 from distutils.spawn import find_executable
 from setuptools.command.build_py import build_py
+from datetime import datetime
 
 
 class ProtoBuild(build_py):
@@ -39,6 +40,11 @@ class ProtoBuild(build_py):
 
                 if (not op.exists(output) or (op.getmtime(source) > op.getmtime(output))):
                     sys.stderr.write('Protobuf-compiling ' + source + '\n')
-                    subprocess.check_call([self.find_protoc(), '--python_out=.', source])
-
-
+                    subprocess.check_call([self.find_protoc(),
+                                           '--python_out=%s' % packagedir,
+                                           '-I%s' % packagedir,
+                                           source])
+                else:
+                    sys.stderr.write("Proto file %s already generated at %s, pass\n" %
+                                     (output,
+                                      datetime.fromtimestamp(op.getmtime(output))))
